@@ -21,7 +21,6 @@ export class CreateUserService {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(createUserDto.password, salt);
 
-    // 3. Mapear DTO para Entidade
     const newUser = new User();
     Object.assign(newUser, createUserDto);
     newUser.password = hashedPassword;

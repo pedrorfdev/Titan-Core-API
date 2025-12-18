@@ -27,6 +27,6 @@ import { AuthModule } from "../auth/auth.module";
       useClass: UserRepository
     }
   ],
-  exports: [TypeOrmModule]
+  exports: [TypeOrmModule, FindByEmailService, CreateUserService, UpdateUserService]
 })
 export class UserModule{}

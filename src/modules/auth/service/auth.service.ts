@@ -1,25 +1,24 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
-import type { User } from 'src/modules/users/domain/entities/user';
+import { User } from 'src/modules/users/domain/entities/user';
 import type { LoginDto } from '../domain/dto/login.dto';
 import type { CreateUserDto } from 'src/modules/users/domain/dto/create-user.dto';
 import type { RegisterDto } from '../domain/dto/register.dto';
 import type { ResetPasswordDto } from '../domain/dto/reset-password.dto';
-import type { FindByEmailService } from 'src/modules/users/services/find-by-email.service';
-import type { CreateUserService } from 'src/modules/users/services/create.service';
+import { FindByEmailService } from 'src/modules/users/services/find-by-email.service';
+import { CreateUserService } from 'src/modules/users/services/create.service';
 import type { ValidateTokenDTO } from '../domain/dto/validate-token.dto';
-import type { UpdateUserService } from 'src/modules/users/services/update.service';
+import { UpdateUserService } from 'src/modules/users/services/update.service';
 
 @Injectable()
 export class AuthService {
-  
   constructor(
     private readonly jwtService: JwtService,
+  
     private readonly findByEmailService: FindByEmailService,
     private readonly createUserService: CreateUserService,
-    private readonly updateUserService: UpdateUserService
-    
+    private readonly updateUserService: UpdateUserService,
   ) {}
 
   async generateJwtToken(user: User) {
@@ -43,7 +42,7 @@ export class AuthService {
     return await this.generateJwtToken(user);
   }
 
-   async register(body: RegisterDto) {
+  async register(body: RegisterDto) {
     const newUser: CreateUserDto = {
       email: body.email,
       name: body.name,
@@ -61,25 +60,27 @@ export class AuthService {
 
     if (!valid || !decoded) throw new UnauthorizedException('Invalid token');
 
-    const user: User = await this.updateUserService.execute(Number(decoded.sub), {
-      password,
-    });
+    const user: User = await this.updateUserService.execute(
+      Number(decoded.sub),
+      {
+        password,
+      },
+    );
 
     return await this.generateJwtToken(user);
   }
 
-  async validateToken(token: string): Promise<ValidateTokenDTO>{
+  async validateToken(token: string): Promise<ValidateTokenDTO> {
     try {
       const decoded = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET,
         issuer: 'nest-api-auth',
-        audience: 'users'
-      })
+        audience: 'users',
+      });
 
-      return { valid: true, decoded }
+      return { valid: true, decoded };
     } catch (error) {
-      return { valid: false, message: error.message }
+      return { valid: false, message: error.message };
     }
   }
-
 }

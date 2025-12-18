@@ -9,7 +9,7 @@ import { AuthService } from './service/auth.service';
     forwardRef(() => UserModule),
     JwtModule.register({
       secret: process.env.JWT_SECRET
-    })
+    }),
   ],
   controllers: [AuthController],
   providers: [AuthService],
