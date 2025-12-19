@@ -1,98 +1,190 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# API NestJS
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST construída com NestJS para autenticação e gerenciamento de usuários.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+## Configuração do Projeto
 
 ```bash
+# Instalar dependências
 $ npm install
 ```
 
-## Compile and run the project
+## Executando o Projeto
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
+# Modo desenvolvimento
 $ npm run start:dev
 
-# production mode
+# Modo produção
 $ npm run start:prod
+
+# Iniciar normalmente
+$ npm run start
 ```
 
-## Run tests
+A API estará disponível em `http://localhost:3000` (ou na porta especificada na variável de ambiente `PORT`).
+
+## Fluxo da API
+
+### 1. Registrar um Usuário
+
+Primeiro, você precisa registrar um usuário para obter um token de autenticação. Este token será usado para acessar as rotas protegidas.
+
+**Endpoint:** `POST /auth/register`
+
+**Corpo da Requisição:**
+```json
+{
+  "name": "João Silva",
+  "username": "joaosilva",
+  "email": "joao@example.com",
+  "password": "senha123"
+}
+```
+
+**Resposta:**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Exemplo usando cURL:**
+```bash
+curl -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "João Silva",
+    "username": "joaosilva",
+    "email": "joao@example.com",
+    "password": "senha123"
+  }'
+```
+
+**Exemplo usando JavaScript (fetch):**
+```javascript
+const response = await fetch('http://localhost:3000/auth/register', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    name: 'João Silva',
+    username: 'joaosilva',
+    email: 'joao@example.com',
+    password: 'senha123'
+  })
+});
+
+const data = await response.json();
+const token = data.access_token;
+```
+
+### 2. Testar Outras Rotas
+
+Após o registro, você receberá um `access_token`. Use este token no header `Authorization` como Bearer token para acessar as rotas protegidas.
+
+**Rotas protegidas requerem o header Authorization:**
+```
+Authorization: Bearer <seu_access_token>
+```
+
+#### Rotas Disponíveis
+
+##### Rotas de Autenticação
+
+- `POST /auth/register` - Registrar um novo usuário e obter um token de acesso (não requer autenticação)
+- `PATCH /auth/reset-password` - Redefinir senha (não requer autenticação)
+
+##### Rotas de Usuários
+
+**Todas as rotas de usuários são protegidas e requerem autenticação.**
+
+**GET /users** - Listar todos os usuários (🔒 **Protegida** - requer autenticação)
+```bash
+curl http://localhost:3000/users \
+  -H "Authorization: Bearer SEU_ACCESS_TOKEN"
+```
+
+**GET /users/:id** - Buscar um usuário específico por ID (🔒 **Protegida** - requer autenticação)
+```bash
+curl http://localhost:3000/users/1 \
+  -H "Authorization: Bearer SEU_ACCESS_TOKEN"
+```
+
+**POST /users** - Criar um novo usuário (🔒 **Protegida** - requer autenticação)
+```bash
+curl -X POST http://localhost:3000/users \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer SEU_ACCESS_TOKEN" \
+  -d '{
+    "name": "Maria Santos",
+    "username": "mariasantos",
+    "email": "maria@example.com",
+    "password": "senha123"
+  }'
+```
+
+**PUT /users/:id** - Atualizar um usuário (🔒 **Protegida** - requer autenticação)
+```bash
+curl -X PUT http://localhost:3000/users/1 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer SEU_ACCESS_TOKEN" \
+  -d '{
+    "name": "Nome Atualizado",
+    "email": "novoemail@example.com"
+  }'
+```
+
+**DELETE /users/:id** - Deletar um usuário (🔒 **Protegida** - requer autenticação)
+```bash
+curl -X DELETE http://localhost:3000/users/1 \
+  -H "Authorization: Bearer SEU_ACCESS_TOKEN"
+```
+
+#### Exemplo Completo do Fluxo
 
 ```bash
-# unit tests
-$ npm run test
+# 1. Registrar um usuário e salvar o token
+REGISTER_RESPONSE=$(curl -s -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "João Silva",
+    "username": "joaosilva",
+    "email": "joao@example.com",
+    "password": "senha123"
+  }')
 
-# e2e tests
-$ npm run test:e2e
+TOKEN=$(echo $REGISTER_RESPONSE | grep -o '"access_token":"[^"]*' | cut -d'"' -f4)
 
-# test coverage
-$ npm run test:cov
+# 2. Usar o token para acessar rotas protegidas
+curl -X GET http://localhost:3000/users \
+  -H "Authorization: Bearer $TOKEN"
+
+# 3. Criar um novo usuário (rota protegida)
+curl -X POST http://localhost:3000/users \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "name": "Maria Santos",
+    "username": "mariasantos",
+    "email": "maria@example.com",
+    "password": "senha123"
+  }'
+
+# 4. Atualizar um usuário (rota protegida)
+curl -X PUT http://localhost:3000/users/1 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "name": "Nome Atualizado"
+  }'
+
+# 5. Deletar um usuário (rota protegida)
+curl -X DELETE http://localhost:3000/users/1 \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
-## Deployment
+## Licença
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Este projeto está licenciado sob a Licença MIT.

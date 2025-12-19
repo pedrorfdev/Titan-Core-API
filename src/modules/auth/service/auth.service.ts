@@ -1,11 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcryptjs';
-import type { LoginDto } from '../domain/dto/login.dto';
 import type { CreateUserDto } from 'src/modules/users/domain/dto/create-user.dto';
 import type { RegisterDto } from '../domain/dto/register.dto';
 import type { ResetPasswordDto } from '../domain/dto/reset-password.dto';
-import { FindByEmailService } from 'src/modules/users/services/find-by-email.service';
 import { CreateUserService } from 'src/modules/users/services/create.service';
 import type { ValidateTokenDTO } from '../domain/dto/validate-token.dto';
 import { UpdateUserService } from 'src/modules/users/services/update.service';
@@ -15,8 +12,6 @@ import type { User } from 'src/modules/users/domain/entities/user.entity';
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
-  
-    private readonly findByEmailService: FindByEmailService,
     private readonly createUserService: CreateUserService,
     private readonly updateUserService: UpdateUserService,
   ) {}
@@ -37,16 +32,6 @@ export class AuthService {
     
     return { access_token: this.jwtService.sign(payload, options) };
 
-  }
-
-  async login({ email, password }: LoginDto) {
-    const user = await this.findByEmailService.execute(email);
-
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      throw new UnauthorizedException('Email or password is incorrect');
-    }
-
-    return await this.generateJwtToken(user);
   }
 
   async register(body: RegisterDto) {

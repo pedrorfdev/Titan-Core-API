@@ -10,6 +10,7 @@ import { AuthGuard } from 'src/shared/guards/auth.guard';
 
 
 @Controller('users')
+@UseGuards(AuthGuard)
 export class UserController {
   constructor(
     private readonly createService: CreateUserService,
@@ -19,7 +20,6 @@ export class UserController {
     private readonly deleteService: DeleteUserService,
   ) {}
 
-  @UseGuards(AuthGuard)
   @Post()
   @HttpCode(HttpStatus.CREATED)
   create(@Body() createUserDto: CreateUserDto) {
@@ -36,13 +36,11 @@ export class UserController {
     return this.findOneService.execute(+id);
   }
 
-  @UseGuards(AuthGuard)
   @Put(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.updateService.execute(+id, updateUserDto);
   }
 
-  @UseGuards(AuthGuard)
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: string) {
